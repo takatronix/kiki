@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>シェード</title>
+<meta name="description" content="電動ルーフシェードを声のコマンドで動かすボタン（非公式）">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="シェード">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <header><h1>シェード</h1><span id="play"><i></i><i></i><i></i>再生中</span></header>
+  <div id="err"></div>
+  <div class="row big" style="--n:3">
+    <button class="b" data-id="open" style="background:#2f8f4e">開く</button>
+    <button class="b" data-id="close" style="background:#2c5ad8">閉じる</button>
+    <button class="b" data-id="stop" style="background:#d93636">止める</button>
+  </div>
+  <div class="sec">照明</div>
+  <div class="row lights" style="--n:4">
+    <button class="b dark" data-id="lights_on" style="background:#ffd34d">照明オン</button>
+    <button class="b" data-id="lights_off" style="background:#3a3d44">照明オフ</button>
+    <button class="b dark" data-id="bri_up" style="background:#f2e7b8">明るく</button>
+    <button class="b" data-id="bri_down" style="background:#6b6553">暗く</button>
+  </div>
+  <div class="sec">色</div>
+  <div class="row colors" style="--n:9">
+    <button class="b" data-id="red" style="background:#e53935">赤</button>
+    <button class="b" data-id="green" style="background:#2e9e44">緑</button>
+    <button class="b" data-id="blue" style="background:#1e5fe0">青</button>
+    <button class="b dark" data-id="white" style="background:#f4f4f4">白</button>
+    <button class="b" data-id="purple" style="background:#8e3fd6">紫</button>
+    <button class="b dark" data-id="cyan" style="background:#22d3e6">シアン</button>
+    <button class="b dark" data-id="yellow" style="background:#ffe14a">黄</button>
+    <button class="b dark" data-id="orange" style="background:#ff8c1a">オレンジ</button>
+    <button class="b dark" data-id="pink" style="background:#ff7eb6">ピンク</button>
+  </div>
+  <div class="sec">動き</div>
+  <div class="row modes" style="--n:4">
+    <button class="b" data-id="rainbow" style="background:linear-gradient(90deg,#e53935,#ff9800,#fdd835,#43a047,#1e88e5,#8e24aa)">レインボー</button>
+    <button class="b" data-id="flowing" style="background:linear-gradient(90deg,#1e5fe0,#22c3e6,#1e5fe0)">流れる</button>
+    <button class="b" data-id="breathing" style="background:radial-gradient(circle,#b37bff,#4a1f80)">呼吸</button>
+    <button class="b" data-id="gradual" style="background:linear-gradient(90deg,#ff5f6d,#ffc371)">グラデーション</button>
+    <button class="b" data-id="magic" style="background:linear-gradient(135deg,#7b2ff7,#f107a3)">マジック</button>
+    <button class="b" data-id="sport" style="background:linear-gradient(135deg,#d32f2f,#222)">スポーツ</button>
+    <button class="b" data-id="auto" style="background:#4b5563">オート</button>
+  </div>
+  <footer>非公式のツールです（EVNOVA とは関係ありません）。停車中に、まわりを確かめて使ってください。</footer>
+</main>
+<audio id="audio" preload="auto" playsinline></audio>
+<script src="app.js"></script>
+</body>
+</html>
