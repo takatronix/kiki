@@ -33,7 +33,8 @@ h2:first-child { margin-top:0; }
 /* hero */
 .hero { margin:0; padding:14px 14px 10px; border-radius:22px; background:linear-gradient(180deg,#101216,#0a0b0d);
         border:1px solid var(--line); }
-#car { display:block; width:100%; height:auto; max-height:240px; }
+#car { display:block; width:100%; height:auto; max-height:300px; }
+#st-shade { color:var(--fg); font-size:17px; font-weight:650; letter-spacing:.04em; }
 .state { display:flex; justify-content:space-between; gap:10px; margin:6px 4px 0; color:var(--sub); font-size:13.5px; }
 .state > span { display:flex; align-items:center; gap:7px; white-space:nowrap; }
 .dot { width:8px; height:8px; border-radius:50%; background:#555; box-shadow:0 0 8px currentColor; color:transparent; flex:none; }

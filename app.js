@@ -96,7 +96,7 @@ function apply(id) {
 // ---- drawing ----
 const fabric = $("fabric"), hem = $("hem"), glow = $("glow"), ga = $("glow-a"), gb = $("glow-b");
 const glowLine = $("glow-line"), glowSoft = $("glow-soft");
-const ROOF_W = 166, ROLL_X = 262;      // roller at the front edge of the glass roof
+const ROOF_FRONT = 120, ROLL_Y = 262;  // front at the top; the fabric rolls up on a roller at the rear of the glass roof
 
 const hsl = (h, s, l) => `hsl(${((h % 360) + 360) % 360} ${s}% ${l}%)`;
 const mix = (a, b, f) => {               // two #rrggbb, 0..1
@@ -125,18 +125,18 @@ function glowAt(t) {                     // -> [colour a, colour b, opacity 0..1
 function shadeText(p, dir) {
   if (dir < 0) return "開いています…";
   if (dir > 0) return "閉じています…";
-  if (p <= 0.001) return "開いています";
-  if (p >= 0.999) return "閉じています";
-  return "途中で止まっています";
+  if (p <= 0.001) return "開いている";
+  if (p >= 0.999) return "閉まっている";
+  return "途中で止めた";
 }
 
 let lastText = "";
 function draw(now) {
   const p = pos(now);
   if (st.dir && (p <= 0 || p >= 1)) { st.p = p; st.dir = 0; save(); }
-  const w = ROOF_W * p;
-  fabric.setAttribute("x", ROLL_X - w); fabric.setAttribute("width", w);
-  hem.setAttribute("x", ROLL_X - w - 3); hem.style.opacity = p > 0.01 ? 1 : 0;
+  const edge = ROLL_Y - (ROLL_Y - ROOF_FRONT) * p;           // the fabric's front edge: rearward when opening
+  fabric.setAttribute("y", edge); fabric.setAttribute("height", ROLL_Y - edge);
+  hem.setAttribute("y", edge - 1.25); hem.style.opacity = p > 0.01 ? 1 : 0;
   const shown = reduced.matches && st.mode ? 1000 : now;      // reduced motion: a still frame of the mode
   const [a, b, op, dash] = glowAt(shown);
   ga.setAttribute("stop-color", a); gb.setAttribute("stop-color", b);

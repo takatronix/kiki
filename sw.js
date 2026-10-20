@@ -1,5 +1,5 @@
 // Offline after the first visit: cache the page and every clip; serve from cache, refresh in the background.
-const CACHE = "kiki-v2";
+const CACHE = "kiki-v3";
 const FILES = [
   "./", "index.html", "style.css", "app.js", "manifest.webmanifest", "icon-192.png", "icon-512.png",
   "clips/open.mp3",
