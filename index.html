@@ -14,44 +14,163 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<main>
-  <header><h1>シェード</h1><span id="play"><i></i><i></i><i></i>再生中</span></header>
-  <div id="err"></div>
-  <div class="row big" style="--n:3">
-    <button class="b" data-id="open" style="background:#2f8f4e">開く</button>
-    <button class="b" data-id="close" style="background:#2c5ad8">閉じる</button>
-    <button class="b" data-id="stop" style="background:#d93636">止める</button>
+<!-- One source for both copies: this repo (github.com/takatronix/kiki) is the public app; the car web
+     (tesla-pi4 /shade) is built from it by web/shade_sync.py, which adds its left menu and drops the service worker.
+     Every button plays one clip (clips/<id>.mp3): "Hello KiKi", ~2.2 s while KiKi answers, the English command. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-open" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3.5"/><path d="M3 8.5h18"/><path d="M12 17.5V12M9.2 14.6 12 11.8l2.8 2.8"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3.5"/><path d="M3 8.5h18"/><path d="M12 11.5V17M9.2 14.4 12 17.2l2.8-2.8"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><rect x="8.6" y="8.6" width="6.8" height="6.8" rx="1.4"/></symbol>
+    <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9.6 17.6h4.8M10.5 20.6h3"/><path d="M12 5.2a5 5 0 0 0-3 9c.6.5.9 1.1.9 1.8v.2h4.2V16c0-.7.3-1.3.9-1.8a5 5 0 0 0-3-9z"/><path d="M12 1.6v1.1M4.6 4.6l.8.8M19.4 4.6l-.8.8M2.6 10.2h1.1M20.3 10.2h1.1"/></symbol>
+    <symbol id="i-bulb-off" viewBox="0 0 24 24"><path d="M9.6 17.6h4.8M10.5 20.6h3"/><path d="M12 5.2a5 5 0 0 0-3 9c.6.5.9 1.1.9 1.8v.2h4.2V16c0-.7.3-1.3.9-1.8a5 5 0 0 0-3-9z"/><path d="M4.5 3.5l15 17"/></symbol>
+    <symbol id="i-dim" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.6"/><path d="M12 5.4v.6M12 18v.6M5.4 12h.6M18 12h.6M7.3 7.3l.4.4M16.3 16.3l.4.4M7.3 16.7l.4-.4M16.3 7.7l.4-.4"/></symbol>
+    <symbol id="i-bright" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.2v2.6M12 19.2v2.6M2.2 12h2.6M19.2 12h2.6M5.1 5.1 6.9 6.9M17.1 17.1l1.8 1.8M5.1 18.9l1.8-1.8M17.1 6.9l1.8-1.8"/></symbol>
+    <symbol id="i-vol-down" viewBox="0 0 24 24"><path d="M3.5 9.4h3.2L11 5.6v12.8l-4.3-3.8H3.5z"/><path d="M15 12h6"/></symbol>
+    <symbol id="i-vol-up" viewBox="0 0 24 24"><path d="M3.5 9.4h3.2L11 5.6v12.8l-4.3-3.8H3.5z"/><path d="M15 12h6M18 9v6"/></symbol>
+    <symbol id="i-rainbow" viewBox="0 0 24 24"><path d="M2.8 17.5a9.2 9.2 0 0 1 18.4 0M6.3 17.5a5.7 5.7 0 0 1 11.4 0M9.8 17.5a2.2 2.2 0 0 1 4.4 0"/></symbol>
+    <symbol id="i-waves" viewBox="0 0 24 24"><path d="M2.5 8.5c1.6-1.6 3.2-1.6 4.8 0s3.2 1.6 4.8 0 3.2-1.6 4.8 0 3.2 1.6 4.6 0M2.5 15.5c1.6-1.6 3.2-1.6 4.8 0s3.2 1.6 4.8 0 3.2-1.6 4.8 0 3.2 1.6 4.6 0"/></symbol>
+    <symbol id="i-pulse" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.6"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="9.4" stroke-dasharray="2 2.6"/></symbol>
+    <symbol id="i-gradual" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5"/><path d="M3.8 15.5 15.5 3.8M3.8 10 10 3.8M9 20.3 20.3 9"/></symbol>
+    <symbol id="i-magic" viewBox="0 0 24 24"><path d="M10 3.5l1.7 4.8 4.8 1.7-4.8 1.7L10 16.5l-1.7-4.8L3.5 10l4.8-1.7z"/><path d="M18 14.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></symbol>
+    <symbol id="i-sport" viewBox="0 0 24 24"><path d="M3.6 18a9 9 0 1 1 16.8 0"/><path d="M12 16.8l4.4-5.4"/><circle cx="12" cy="16.8" r="1.3"/><path d="M6.4 12.2h.1M8.2 8.4h.1M12 6.9h.1"/></symbol>
+    <symbol id="i-auto" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.4 16.6 12 7.6l3.6 9M9.7 13.4h4.6"/></symbol>
+    <symbol id="i-duo" viewBox="0 0 24 24"><circle cx="9" cy="12" r="5.6"/><circle cx="15" cy="12" r="5.6"/></symbol>
+    <symbol id="i-ice" viewBox="0 0 24 24"><path d="M12 2.8v9M8.2 4.8l7.6 5M15.8 4.8l-7.6 5"/><path d="M2.5 17c1.6-1.6 3.2-1.6 4.8 0s3.2 1.6 4.8 0 3.2-1.6 4.8 0 3.2 1.6 4.6 0"/></symbol>
+  </defs>
+</svg>
+
+<main id="app">
+  <header class="top">
+    <h1>シェード</h1>
+    <p class="how">押すと「Hello KiKi」のあと、英語のコマンドを流します</p>
+    <span id="play" class="pill" aria-live="polite"><span class="wave"><i></i><i></i><i></i><i></i></span>再生中</span>
+  </header>
+  <div id="err" role="alert"></div>
+
+  <div class="layout">
+    <section class="col-a">
+      <figure class="hero" aria-label="シェードと照明の様子（最後に押した操作からの目安）">
+        <svg id="car" viewBox="0 0 400 180" role="img">
+          <defs>
+            <linearGradient id="g-body" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#2a2d33"/><stop offset=".5" stop-color="#1d1f24"/><stop offset="1" stop-color="#2a2d33"/>
+            </linearGradient>
+            <linearGradient id="g-glass" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#1b2738"/><stop offset=".55" stop-color="#0d131c"/><stop offset="1" stop-color="#141d2a"/>
+            </linearGradient>
+            <linearGradient id="g-sheen" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".07"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="g-fabric" gradientUnits="userSpaceOnUse" x1="0" y1="32" x2="0" y2="148">
+              <stop offset="0" stop-color="#3b3e45"/><stop offset=".5" stop-color="#4a4d55"/><stop offset="1" stop-color="#3b3e45"/>
+            </linearGradient>
+            <pattern id="p-pleat" width="6" height="180" patternUnits="userSpaceOnUse">
+              <rect width="6" height="180" fill="url(#g-fabric)"/><rect x="4.6" width="1.4" height="180" fill="#000" opacity=".18"/><rect x="0" width=".8" height="180" fill="#fff" opacity=".05"/>
+            </pattern>
+            <linearGradient id="g-glow" x1="0" y1="0" x2="1" y2="0">
+              <stop id="glow-a" offset="0" stop-color="#fff"/><stop id="glow-b" offset="1" stop-color="#fff"/>
+            </linearGradient>
+            <filter id="f-blur" x="-20%" y="-40%" width="140%" height="180%"><feGaussianBlur stdDeviation="5"/></filter>
+            <filter id="f-shadow" x="-10%" y="-30%" width="120%" height="160%"><feGaussianBlur stdDeviation="7"/></filter>
+            <clipPath id="c-roof"><path d="M74 38C62 58 60 122 74 142L250 147C292 147 318 128 324 90 318 52 292 33 250 33z"/></clipPath>
+          </defs>
+          <ellipse cx="200" cy="96" rx="186" ry="76" fill="#000" opacity=".7" filter="url(#f-shadow)"/>
+          <path d="M297 24l9-15c3-2 9-2 12 0l-5 16zM297 156l9 15c3 2 9 2 12 0l-5-16z" fill="#2a2d33" stroke="#fff" stroke-opacity=".08"/>
+          <path d="M42 20C22 25 12 52 12 90s10 65 30 70l78 6c80 4 160 4 210-3 36-6 56-30 58-73-2-43-22-67-58-73-50-7-130-7-210-3z" fill="url(#g-body)" stroke="#fff" stroke-opacity=".1"/>
+          <path d="M338 40c18 10 28 28 30 50-2 22-12 40-30 50M20 62c-3 18-3 38 0 56" fill="none" stroke="#fff" stroke-opacity=".07"/>
+          <g id="glow" opacity="0">
+            <path id="glow-soft" d="M74 38C62 58 60 122 74 142L250 147C292 147 318 128 324 90 318 52 292 33 250 33z" fill="none" stroke="url(#g-glow)" stroke-width="10" filter="url(#f-blur)"/>
+            <path id="glow-line" d="M74 38C62 58 60 122 74 142L250 147C292 147 318 128 324 90 318 52 292 33 250 33z" fill="none" stroke="url(#g-glow)" stroke-width="1.6" opacity=".9"/>
+          </g>
+          <path d="M74 38C62 58 60 122 74 142L250 147C292 147 318 128 324 90 318 52 292 33 250 33z" fill="url(#g-glass)"/>
+          <g clip-path="url(#c-roof)">
+            <rect x="60" y="20" width="270" height="140" fill="url(#g-sheen)" transform="skewX(-28) translate(46 0)"/>
+            <rect id="fabric" x="262" y="20" width="0" height="140" fill="url(#p-pleat)"/>
+            <rect id="hem" x="259" y="20" width="3" height="140" fill="#666a73"/>
+          </g>
+          <path d="M96 37v106" stroke="#000" stroke-width="3" opacity=".75"/>
+          <rect x="261" y="33" width="7" height="114" rx="3.5" fill="#3d4047" stroke="#000" stroke-opacity=".45"/>
+          <path d="M268 36c22 4 44 22 50 54-6 32-28 50-50 54" fill="none" stroke="#fff" stroke-opacity=".05" stroke-width="6"/>
+        </svg>
+        <figcaption class="state">
+          <span><i id="st-shade-dot" class="dot"></i><span id="st-shade">開いています</span></span>
+          <span><i id="st-light-dot" class="dot"></i><span id="st-light">照明 白</span></span>
+        </figcaption>
+      </figure>
+
+      <div class="primary">
+        <button class="k big" data-id="open"><svg class="ic"><use href="#i-open"/></svg><b>開く</b><small>Open Shade</small></button>
+        <button class="k big" data-id="close"><svg class="ic"><use href="#i-close"/></svg><b>閉じる</b><small>Close Shade</small></button>
+        <button class="k big stop" data-id="stop"><svg class="ic"><use href="#i-stop"/></svg><b>止める</b><small>Stop Shade</small></button>
+      </div>
+
+      <div class="vol">
+        <button class="k row" data-id="vol_down"><svg class="ic"><use href="#i-vol-down"/></svg><span><b>音量を下げる</b><small>Volume down</small></span></button>
+        <button class="k row" data-id="vol_up"><svg class="ic"><use href="#i-vol-up"/></svg><span><b>音量を上げる</b><small>Volume up</small></span></button>
+      </div>
+      <footer>非公式のツールです（EVNOVA とは関係ありません）。停車中に、まわりを確かめて使ってください。上の絵は最後に押した操作からの目安で、実際の状態ではありません。</footer>
+    </section>
+
+    <section class="col-b">
+      <h2>照明</h2>
+      <div class="lights">
+        <button class="k row" data-id="lights_on"><svg class="ic"><use href="#i-bulb"/></svg><span><b>点灯</b><small>Turn on all lights</small></span></button>
+        <button class="k row" data-id="lights_off"><svg class="ic"><use href="#i-bulb-off"/></svg><span><b>消灯</b><small>Turn off all lights</small></span></button>
+        <button class="k row" data-id="bri_down"><svg class="ic"><use href="#i-dim"/></svg><span><b>暗く</b><small>Brightness down</small></span></button>
+        <button class="k row" data-id="bri_up"><svg class="ic"><use href="#i-bright"/></svg><span><b>明るく</b><small>Brightness up</small></span></button>
+      </div>
+      <div class="bri">
+        <button class="k end" data-id="bri_low"><b>最小</b><small>Lowest brightness</small></button>
+        <div class="seg" id="seg">
+          <button class="k lv" data-id="bri_1" data-en="Brightness one"><i></i><b>1</b></button>
+          <button class="k lv" data-id="bri_2" data-en="Brightness two"><i></i><b>2</b></button>
+          <button class="k lv" data-id="bri_3" data-en="Brightness three"><i></i><b>3</b></button>
+          <button class="k lv" data-id="bri_4" data-en="Brightness four"><i></i><b>4</b></button>
+          <button class="k lv" data-id="bri_5" data-en="Brightness five"><i></i><b>5</b></button>
+          <button class="k lv" data-id="bri_6" data-en="Brightness six"><i></i><b>6</b></button>
+          <button class="k lv" data-id="bri_7" data-en="Brightness seven"><i></i><b>7</b></button>
+          <button class="k lv" data-id="bri_8" data-en="Brightness eight"><i></i><b>8</b></button>
+          <button class="k lv" data-id="bri_9" data-en="Brightness nine"><i></i><b>9</b></button>
+          <button class="k lv" data-id="bri_10" data-en="Brightness ten"><i></i><b>10</b></button>
+          <small class="seg-en" id="seg-en">Brightness one 〜 ten</small>
+        </div>
+        <button class="k end" data-id="bri_high"><b>最大</b><small>Highest brightness</small></button>
+      </div>
+
+      <h2>色</h2>
+      <div class="colors">
+        <button class="k sw" data-id="red" style="--c:#ff453a"><i></i><b>赤</b><small>switch to <br>red</small></button>
+        <button class="k sw" data-id="green" style="--c:#30d158"><i></i><b>緑</b><small>switch to <br>green</small></button>
+        <button class="k sw" data-id="blue" style="--c:#2f6bff"><i></i><b>青</b><small>switch to <br>blue</small></button>
+        <button class="k sw" data-id="white" style="--c:#f2f4ff"><i></i><b>白</b><small>switch to <br>white</small></button>
+        <button class="k sw" data-id="purple" style="--c:#a35cff"><i></i><b>紫</b><small>switch to <br>purple</small></button>
+        <button class="k sw" data-id="cyan" style="--c:#2ad4ee"><i></i><b>シアン</b><small>switch to <br>cyan</small></button>
+        <button class="k sw" data-id="yellow" style="--c:#ffd60a"><i></i><b>黄</b><small>switch to <br>yellow</small></button>
+        <button class="k sw" data-id="orange" style="--c:#ff9500"><i></i><b>オレンジ</b><small>orange <br>ambient</small></button>
+        <button class="k sw" data-id="pink" style="--c:#ff6fae"><i></i><b>ピンク</b><small>pink <br>ambient</small></button>
+      </div>
+
+      <h2>動き</h2>
+      <div class="modes">
+        <button class="k md" data-id="rainbow"><svg class="ic"><use href="#i-rainbow"/></svg><span><b>レインボー</b><small>Rainbow ambient</small></span><i class="fx fx-rainbow"></i></button>
+        <button class="k md" data-id="flowing"><svg class="ic"><use href="#i-waves"/></svg><span><b>流れる</b><small>Flowing ambient</small></span><i class="fx fx-flowing"></i></button>
+        <button class="k md" data-id="breathing"><svg class="ic"><use href="#i-pulse"/></svg><span><b>呼吸</b><small>Breathing ambient</small></span><i class="fx fx-breathing"></i></button>
+        <button class="k md" data-id="gradual"><svg class="ic"><use href="#i-gradual"/></svg><span><b>グラデーション</b><small>Gradual ambient</small></span><i class="fx fx-gradual"></i></button>
+        <button class="k md" data-id="magic"><svg class="ic"><use href="#i-magic"/></svg><span><b>マジック</b><small>Magic ambient</small></span><i class="fx fx-magic"></i></button>
+        <button class="k md" data-id="sport"><svg class="ic"><use href="#i-sport"/></svg><span><b>スポーツ</b><small>Sport ambient</small></span><i class="fx fx-sport"></i></button>
+        <button class="k md" data-id="auto"><svg class="ic"><use href="#i-auto"/></svg><span><b>オート</b><small>Auto ambient</small></span><i class="fx fx-auto"></i></button>
+      </div>
+      <h3>対応機種のみ</h3>
+      <div class="modes">
+        <button class="k md" data-id="grad_rb"><svg class="ic"><use href="#i-duo"/></svg><span><b>赤と青</b><small>Red blue gradient</small></span><i class="fx fx-rb"></i></button>
+        <button class="k md" data-id="grad_rg"><svg class="ic"><use href="#i-duo"/></svg><span><b>赤と緑</b><small>Red green gradient</small></span><i class="fx fx-rg"></i></button>
+        <button class="k md" data-id="grad_bg"><svg class="ic"><use href="#i-duo"/></svg><span><b>青と緑</b><small>Blue green gradient</small></span><i class="fx fx-bg"></i></button>
+        <button class="k md" data-id="ice_flow"><svg class="ic"><use href="#i-ice"/></svg><span><b>水色の流れ</b><small>Ice blue flow</small></span><i class="fx fx-ice"></i></button>
+      </div>
+    </section>
   </div>
-  <div class="sec">照明</div>
-  <div class="row lights" style="--n:4">
-    <button class="b dark" data-id="lights_on" style="background:#ffd34d">照明オン</button>
-    <button class="b" data-id="lights_off" style="background:#3a3d44">照明オフ</button>
-    <button class="b dark" data-id="bri_up" style="background:#f2e7b8">明るく</button>
-    <button class="b" data-id="bri_down" style="background:#6b6553">暗く</button>
-  </div>
-  <div class="sec">色</div>
-  <div class="row colors" style="--n:9">
-    <button class="b" data-id="red" style="background:#e53935">赤</button>
-    <button class="b" data-id="green" style="background:#2e9e44">緑</button>
-    <button class="b" data-id="blue" style="background:#1e5fe0">青</button>
-    <button class="b dark" data-id="white" style="background:#f4f4f4">白</button>
-    <button class="b" data-id="purple" style="background:#8e3fd6">紫</button>
-    <button class="b dark" data-id="cyan" style="background:#22d3e6">シアン</button>
-    <button class="b dark" data-id="yellow" style="background:#ffe14a">黄</button>
-    <button class="b dark" data-id="orange" style="background:#ff8c1a">オレンジ</button>
-    <button class="b dark" data-id="pink" style="background:#ff7eb6">ピンク</button>
-  </div>
-  <div class="sec">動き</div>
-  <div class="row modes" style="--n:4">
-    <button class="b" data-id="rainbow" style="background:linear-gradient(90deg,#e53935,#ff9800,#fdd835,#43a047,#1e88e5,#8e24aa)">レインボー</button>
-    <button class="b" data-id="flowing" style="background:linear-gradient(90deg,#1e5fe0,#22c3e6,#1e5fe0)">流れる</button>
-    <button class="b" data-id="breathing" style="background:radial-gradient(circle,#b37bff,#4a1f80)">呼吸</button>
-    <button class="b" data-id="gradual" style="background:linear-gradient(90deg,#ff5f6d,#ffc371)">グラデーション</button>
-    <button class="b" data-id="magic" style="background:linear-gradient(135deg,#7b2ff7,#f107a3)">マジック</button>
-    <button class="b" data-id="sport" style="background:linear-gradient(135deg,#d32f2f,#222)">スポーツ</button>
-    <button class="b" data-id="auto" style="background:#4b5563">オート</button>
-  </div>
-  <footer>非公式のツールです（EVNOVA とは関係ありません）。停車中に、まわりを確かめて使ってください。</footer>
+
 </main>
 <audio id="audio" preload="auto" playsinline></audio>
 <script src="app.js"></script>
